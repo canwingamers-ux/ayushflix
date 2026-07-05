@@ -289,14 +289,86 @@
     .input-field:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(229,9,20,0.12); }
 
     .admin-tab {
-      color: var(--muted);
+      color: var(--muted) !important;
       border-bottom: 2px solid transparent;
       transition: color 0.25s ease, border-color 0.25s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+      opacity: 1 !important;
+      visibility: visible !important;
+      display: inline-block !important;
     }
     .admin-tab.active {
-      color: var(--text);
+      color: var(--text) !important;
       border-bottom-color: var(--gold);
     }
+    .admin-tab:hover { color: var(--text) !important; }
+
+    /* ============ Profile-select Netflix-style poster backdrop ============ */
+    #profile-select-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 3px;
+      opacity: 0.55;
+      filter: saturate(1.1);
+    }
+    #profile-select-backdrop img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    #profile-select-backdrop::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(12,12,12,0.55) 0%, rgba(12,12,12,0.85) 55%, #0c0c0c 100%);
+    }
+    #profile-select-view > * { position: relative; z-index: 1; }
+
+    /* ============ Top 10 row: big outline rank numerals ============ */
+    .top10-card {
+      display: flex;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+    .top10-rank {
+      font-family: 'Bebas Neue', 'Inter', sans-serif;
+      font-size: clamp(64px, 9vw, 116px);
+      line-height: 0.8;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      margin-right: -0.18em;
+      -webkit-text-fill-color: transparent;
+      background: linear-gradient(180deg, #3a3a3a, #0c0c0c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-stroke: 3px rgba(255,255,255,0.55);
+      position: relative;
+      top: 6px;
+      user-select: none;
+    }
+
+    /* Curation editor rows (admin Home & Top 10 tab) */
+    .curation-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+    }
+    .curation-item .curation-order-btn {
+      color: var(--muted);
+      transition: color 0.2s ease;
+    }
+    .curation-item .curation-order-btn:hover { color: var(--text); }
+    .curation-item .curation-order-btn:disabled { opacity: 0.25; cursor: default; }
 
     /* Smooth fade for the player's format-warning / player transitions */
     #player-view, #catalog-view { transition: opacity 0.3s ease; }
@@ -691,6 +763,7 @@
   <!-- Auth View -->
   <!-- Profile Select View ("Who's Watching") -->
   <div id="profile-select-view">
+    <div id="profile-select-backdrop"></div>
     <h1 class="font-display text-2xl sm:text-4xl tracking-wide mb-3 text-center">Who's Watching?</h1>
     <p id="profile-sync-warning" class="hidden text-center text-xs text-amber-400 mb-6 max-w-xs">Couldn't sync with the server — showing profiles saved on this device for now.</p>
     <div id="profile-grid" class="flex flex-wrap items-start justify-center gap-6 sm:gap-8 max-w-3xl mt-5"></div>
@@ -899,6 +972,28 @@
               <!-- Items injected by JS -->
             </div>
             <button data-scroll="continue-watching-row" data-dir="1" class="nf-row-arrow row-scroll-btn hidden sm:flex absolute right-0 top-0 bottom-2 z-10 w-10 items-center justify-center bg-gradient-to-l from-black/80 to-transparent"><i data-feather="chevron-right" class="w-7 h-7"></i></button>
+          </div>
+        </div>
+
+        <div id="spotlight-section" class="hidden w-full">
+          <h2 class="font-display text-lg sm:text-2xl tracking-tight mb-3 sm:mb-4">Spotlight Picks</h2>
+          <div class="nf-row-wrap relative group">
+            <button data-scroll="spotlight-row" data-dir="-1" class="nf-row-arrow row-scroll-btn hidden sm:flex absolute left-0 top-0 bottom-2 z-10 w-10 items-center justify-center bg-gradient-to-r from-black/80 to-transparent"><i data-feather="chevron-left" class="w-7 h-7"></i></button>
+            <div id="spotlight-row" class="nf-row flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+              <!-- Items injected by JS -->
+            </div>
+            <button data-scroll="spotlight-row" data-dir="1" class="nf-row-arrow row-scroll-btn hidden sm:flex absolute right-0 top-0 bottom-2 z-10 w-10 items-center justify-center bg-gradient-to-l from-black/80 to-transparent"><i data-feather="chevron-right" class="w-7 h-7"></i></button>
+          </div>
+        </div>
+
+        <div id="top10-section" class="hidden w-full">
+          <h2 class="font-display text-lg sm:text-2xl tracking-tight mb-3 sm:mb-4">Top 10 Right Now</h2>
+          <div class="nf-row-wrap relative group">
+            <button data-scroll="top10-row" data-dir="-1" class="nf-row-arrow row-scroll-btn hidden sm:flex absolute left-0 top-0 bottom-2 z-10 w-10 items-center justify-center bg-gradient-to-r from-black/80 to-transparent"><i data-feather="chevron-left" class="w-7 h-7"></i></button>
+            <div id="top10-row" class="nf-row flex gap-1 overflow-x-auto pb-2 pl-2 hide-scrollbar">
+              <!-- Items injected by JS -->
+            </div>
+            <button data-scroll="top10-row" data-dir="1" class="nf-row-arrow row-scroll-btn hidden sm:flex absolute right-0 top-0 bottom-2 z-10 w-10 items-center justify-center bg-gradient-to-l from-black/80 to-transparent"><i data-feather="chevron-right" class="w-7 h-7"></i></button>
           </div>
         </div>
 
@@ -1135,6 +1230,7 @@
         <button id="tab-upload-btn" class="admin-tab active py-3 text-sm font-semibold transition-all">Upload</button>
         <button id="tab-manage-btn" class="admin-tab py-3 text-sm font-semibold transition-all">Manage Library</button>
         <button id="tab-player-btn" class="admin-tab py-3 text-sm font-semibold transition-all">Player</button>
+        <button id="tab-home-btn" class="admin-tab py-3 text-sm font-semibold transition-all">Home &amp; Top 10</button>
       </div>
 
       <div class="overflow-y-auto custom-scrollbar">
@@ -1343,6 +1439,33 @@
           </div>
 
           <button id="admin-upnext-save-btn" class="w-full py-3 btn-primary rounded-xl font-semibold transition-all">Save Player Settings</button>
+          <p class="text-xs text-[var(--muted)] -mt-2">These are the defaults for the whole library. To override Up Next or Skip Intro for one specific episode, open that episode in <span class="text-[var(--text)] font-semibold">Manage Library</span> and edit it there.</p>
+        </div>
+
+        <!-- Home & Top 10 Tab -->
+        <div id="tab-home" class="p-5 sm:p-8 hidden flex flex-col gap-6">
+          <div id="curation-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono"></div>
+          <div id="curation-success" class="hidden p-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-xs font-mono"></div>
+
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--text)] mb-1">Homepage Spotlight</h3>
+            <p class="text-xs text-[var(--muted)] mb-3">Pick up to 5 titles to feature in the "Spotlight" row on the home page. Leave empty to fall back to the most recently added titles automatically.</p>
+            <select id="curation-add-spotlight" class="input-field w-full rounded-2xl py-3 px-4 text-sm mb-3">
+              <option value="">+ Add a title to Spotlight...</option>
+            </select>
+            <div id="curation-spotlight-list" class="flex flex-col gap-2"></div>
+          </div>
+
+          <div class="pt-2 border-t border-[var(--border)]">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--text)] mb-1 mt-4">Top 10 Right Now</h3>
+            <p class="text-xs text-[var(--muted)] mb-3">Pick up to 10 titles, in order, for the ranked "Top 10 Right Now" row. Leave empty to hide this row.</p>
+            <select id="curation-add-top10" class="input-field w-full rounded-2xl py-3 px-4 text-sm mb-3">
+              <option value="">+ Add a title to Top 10...</option>
+            </select>
+            <div id="curation-top10-list" class="flex flex-col gap-2"></div>
+          </div>
+
+          <button id="curation-save-btn" class="w-full py-3 btn-primary rounded-xl font-semibold transition-all">Save Home &amp; Top 10 Settings</button>
         </div>
       </div>
     </div>
@@ -1837,12 +1960,30 @@
       renderProfileGrid();
       gsap.fromTo(profileGrid.children, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.06, ease: 'power3.out' });
 
+      // Netflix-style poster wall behind the profile picker — kicks off the
+      // (cached) library fetch early so it's ready by the time a profile is
+      // picked, and paints a backdrop collage as soon as it resolves.
+      ensureLibraryLoaded().then(renderProfileSelectBackdrop).catch(() => {});
+
       try {
         await loadUserProfiles();
       } catch (e) {
         console.error('Could not load profiles', e);
       }
       renderProfileGrid();
+    }
+
+    function renderProfileSelectBackdrop() {
+      const el = document.getElementById('profile-select-backdrop');
+      if (!el || !globalLibrary.length) return;
+      const posters = globalLibrary.map(v => v.thumbnail).filter(Boolean);
+      if (!posters.length) return;
+      // Shuffle so the wall looks different each visit, then tile enough
+      // copies to comfortably fill any screen width.
+      const shuffled = [...posters].sort(() => Math.random() - 0.5);
+      const tiled = [];
+      while (tiled.length < 28) tiled.push(...shuffled);
+      el.innerHTML = tiled.slice(0, 28).map(src => `<img src="${src}" loading="lazy" />`).join('');
     }
 
     function enterWithProfile(profile) {
@@ -2076,6 +2217,14 @@
         } catch (e) { /* no overrides yet — fine, everything just uses filenames */ }
         window.__neonstreamOverrides = overridesMap; // exposed for the Manage tab's edit form
 
+        // Home Spotlight + Top 10 picks, admin-curated, stored the same way.
+        let curation = { spotlight: [], top10: [] };
+        try {
+          const curRes = await fetch(`${resolveUrlBase}/_meta/curation.json`);
+          if (curRes.ok) curation = await curRes.json();
+        } catch (e) { /* no curation set yet — fine, home rows fall back to auto */ }
+        window.__neonstreamCuration = { spotlight: curation.spotlight || [], top10: curation.top10 || [] };
+
         // Direct, single-file formats. .ts and .m3u8 are handled separately
         // below (HLS bundles) since a lone .ts/.m3u8 is never its own video.
         const videoExts = ['.mp4', '.m4v', '.mkv', '.mov', '.webm', '.ogv', '.avi'];
@@ -2157,7 +2306,8 @@
             cleanBase,
             overrideKey,
             qualityLabel,
-            details: override && override.details ? override.details : null
+            details: override && override.details ? override.details : null,
+            player: override && override.player ? override.player : null
           };
         });
 
@@ -2199,6 +2349,7 @@
             cleanBase: title,
             overrideKey,
             details: override && override.details ? override.details : null,
+            player: override && override.player ? override.player : null,
             qualityLabel: null
           };
         });
@@ -2234,7 +2385,8 @@
             audioTracks: primary.audioTracks,
             folder: primary.folder,
             renditions,
-            details: primary.details
+            details: primary.details,
+            player: primary.player
           });
         });
 
@@ -2251,7 +2403,8 @@
             subtitle: h.subtitle,
             folder: h.folder,
             renditions: [{ label: 'HLS (Adaptive)', url: h.url, mimeType: h.mimeType, size: h.size, ext: h.ext, path: h.path }],
-            details: h.details
+            details: h.details,
+            player: h.player
           });
         });
 
@@ -2310,6 +2463,17 @@
       return map[ext] || 'video/mp4';
     }
 
+    let libraryLoadPromise = null;
+    // Shared so the "Who's Watching" backdrop and the main app don't both
+    // fetch the whole Hugging Face repo tree separately.
+    function ensureLibraryLoaded(forceRefresh) {
+      if (forceRefresh) libraryLoadPromise = null;
+      if (!libraryLoadPromise) {
+        libraryLoadPromise = fetchAutomatedLibrary().then(lib => { globalLibrary = lib; return lib; });
+      }
+      return libraryLoadPromise;
+    }
+
     async function initLibrary() {
       document.getElementById('loading-skeleton').innerHTML = Array(10).fill(`
         <div class="w-full aspect-[2/3] bg-[rgba(255,255,255,0.04)] rounded-2xl overflow-hidden border border-[var(--border)] animate-pulse"></div>
@@ -2318,7 +2482,7 @@
       document.getElementById('empty-library').classList.add('hidden');
       document.getElementById('empty-library').style.display = 'none';
 
-      globalLibrary = await fetchAutomatedLibrary();
+      globalLibrary = await ensureLibraryLoaded(true);
       document.getElementById('loading-skeleton').innerHTML = '';
       renderGrid(globalLibrary);
       refreshFolderSuggestions();
@@ -2495,7 +2659,48 @@
     }
 
 
+    function makeTop10Card(item, rank) {
+      const wrap = document.createElement('div');
+      wrap.className = 'top10-card';
+      const poster = makeRowCard(item);
+      poster.className = poster.className.replace('w-28 sm:w-36 md:w-44', 'w-24 sm:w-32 md:w-40');
+      const rankEl = document.createElement('span');
+      rankEl.className = 'top10-rank';
+      rankEl.textContent = String(rank);
+      wrap.appendChild(rankEl);
+      wrap.appendChild(poster);
+      return wrap;
+    }
+
+    // Resolves an ordered list of item ids (saved by the admin) back into
+    // real library items, silently dropping any that no longer exist.
+    function resolveCuratedItems(ids) {
+      if (!ids || !ids.length) return [];
+      return ids.map(id => globalLibrary.find(v => v.id === id)).filter(Boolean);
+    }
+
     function renderHomeRows() {
+      const curation = window.__neonstreamCuration || { spotlight: [], top10: [] };
+
+      // Spotlight: admin-picked titles, falling back to the newest few
+      // additions to the library when nothing has been picked yet.
+      let spotlightItems = resolveCuratedItems(curation.spotlight).slice(0, 5);
+      if (!spotlightItems.length) spotlightItems = [...globalLibrary].reverse().slice(0, 5);
+      fillRow('spotlight-section', 'spotlight-row', spotlightItems);
+
+      // Top 10: purely admin-curated, ranked. Hidden entirely if empty.
+      const top10Items = resolveCuratedItems(curation.top10).slice(0, 10);
+      const top10Section = document.getElementById('top10-section');
+      const top10Row = document.getElementById('top10-row');
+      top10Row.innerHTML = '';
+      if (!top10Items.length) {
+        top10Section.classList.add('hidden');
+      } else {
+        top10Section.classList.remove('hidden');
+        top10Items.forEach((item, i) => top10Row.appendChild(makeTop10Card(item, i + 1)));
+        feather.replace();
+      }
+
       // New Releases: most recently added items first (end of the library array)
       const newest = [...globalLibrary].reverse().slice(0, 15);
       fillRow('new-releases-section', 'new-releases-row', newest);
@@ -3567,8 +3772,21 @@
       return eps[idx + 1];
     }
 
+    // Merges the global Player-tab defaults with any per-episode override
+    // saved on the episode itself (via the Manage Library edit form).
+    function effectivePlayerSettings() {
+      const ov = (currentVideoInfo && currentVideoInfo.player) || {};
+      return {
+        upNextEnabled: ov.upNextEnabled !== undefined && ov.upNextEnabled !== null ? ov.upNextEnabled : playerSettings.upNextEnabled,
+        upNextMessage: ov.upNextMessage || playerSettings.upNextMessage,
+        upNextSeconds: ov.upNextSeconds || playerSettings.upNextSeconds,
+        skipIntroSeconds: (ov.skipIntroSeconds !== undefined && ov.skipIntroSeconds !== null) ? ov.skipIntroSeconds : playerSettings.skipIntroSeconds
+      };
+    }
+
     function handleUpNextTick() {
-      if (!playerSettings.upNextEnabled || upNextDismissed || upNextAdvanced || !playerInstance) return;
+      const settings = effectivePlayerSettings();
+      if (!settings.upNextEnabled || upNextDismissed || upNextAdvanced || !playerInstance) return;
       const next = getNextEpisode();
       if (!next) return;
 
@@ -3578,9 +3796,9 @@
       const remaining = duration - current;
 
       const card = document.getElementById('up-next-card');
-      if (remaining <= playerSettings.upNextSeconds) {
+      if (remaining <= settings.upNextSeconds) {
         if (card.classList.contains('hidden')) {
-          document.getElementById('up-next-label').textContent = playerSettings.upNextMessage || 'Up Next';
+          document.getElementById('up-next-label').textContent = settings.upNextMessage || 'Up Next';
           document.getElementById('up-next-title').textContent = next.title;
           const thumbBox = document.getElementById('up-next-thumb');
           thumbBox.style.backgroundImage = next.thumbnail ? `url('${next.thumbnail}')` : 'none';
@@ -3590,7 +3808,7 @@
           card.classList.remove('hidden');
           gsap.fromTo(card, { opacity: 0, y: 16, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' });
         }
-        const pctLeft = Math.max(0, Math.min(1, remaining / playerSettings.upNextSeconds));
+        const pctLeft = Math.max(0, Math.min(1, remaining / settings.upNextSeconds));
         const circumference = 100.5;
         document.getElementById('up-next-ring-progress').style.strokeDashoffset = String(circumference * (1 - pctLeft));
         document.getElementById('up-next-seconds').textContent = Math.max(0, Math.ceil(remaining));
@@ -3607,10 +3825,11 @@
     }
 
     function handleSkipIntroTick() {
+      const settings = effectivePlayerSettings();
       const btn = document.getElementById('skip-intro-btn');
-      if (!playerSettings.skipIntroSeconds || skipIntroDismissed || !playerInstance) { btn.classList.add('hidden'); return; }
+      if (!settings.skipIntroSeconds || skipIntroDismissed || !playerInstance) { btn.classList.add('hidden'); return; }
       const current = playerInstance.currentTime();
-      if (current <= playerSettings.skipIntroSeconds) {
+      if (current <= settings.skipIntroSeconds) {
         btn.classList.remove('hidden');
       } else {
         btn.classList.add('hidden');
@@ -3619,7 +3838,7 @@
 
     document.getElementById('skip-intro-btn').addEventListener('click', (e) => {
       e.stopPropagation();
-      if (playerInstance) playerInstance.currentTime(playerSettings.skipIntroSeconds);
+      if (playerInstance) playerInstance.currentTime(effectivePlayerSettings().skipIntroSeconds);
       skipIntroDismissed = true;
       document.getElementById('skip-intro-btn').classList.add('hidden');
     });
@@ -3687,11 +3906,13 @@
     const tabUploadBtn = document.getElementById('tab-upload-btn');
     const tabManageBtn = document.getElementById('tab-manage-btn');
     const tabPlayerBtn = document.getElementById('tab-player-btn');
+    const tabHomeBtn = document.getElementById('tab-home-btn');
     const tabUpload = document.getElementById('tab-upload');
     const tabManage = document.getElementById('tab-manage');
     const tabPlayer = document.getElementById('tab-player');
-    const allAdminTabBtns = [tabUploadBtn, tabManageBtn, tabPlayerBtn];
-    const allAdminTabPanels = [tabUpload, tabManage, tabPlayer];
+    const tabHome = document.getElementById('tab-home');
+    const allAdminTabBtns = [tabUploadBtn, tabManageBtn, tabPlayerBtn, tabHomeBtn];
+    const allAdminTabPanels = [tabUpload, tabManage, tabPlayer, tabHome];
     function activateAdminTab(activeBtn, activePanel) {
       allAdminTabBtns.forEach(b => b.classList.toggle('active', b === activeBtn));
       allAdminTabPanels.forEach(p => p.classList.toggle('hidden', p !== activePanel));
@@ -3704,6 +3925,10 @@
     tabPlayerBtn.addEventListener('click', () => {
       activateAdminTab(tabPlayerBtn, tabPlayer);
       loadPlayerSettings();
+    });
+    tabHomeBtn.addEventListener('click', () => {
+      activateAdminTab(tabHomeBtn, tabHome);
+      renderCurationEditor();
     });
 
     document.getElementById('admin-upnext-save-btn').addEventListener('click', async (e) => {
@@ -3729,6 +3954,127 @@
       } finally {
         btn.disabled = false;
         btn.textContent = 'Save Player Settings';
+      }
+    });
+
+    // --- Home & Top 10 curation editor ---
+    // Working copy the admin edits in the panel before hitting Save; starts
+    // as a clone of whatever's already live so re-opening the tab shows the
+    // current picks.
+    let curationDraft = { spotlight: [], top10: [] };
+
+    function renderCurationEditor() {
+      const live = window.__neonstreamCuration || { spotlight: [], top10: [] };
+      curationDraft = { spotlight: [...(live.spotlight || [])], top10: [...(live.top10 || [])] };
+
+      // Only top-level titles (movies + series), not raw episodes — those
+      // aren't meaningful things to spotlight on the home page.
+      const options = globalLibrary.map(v => ({ id: v.id, title: v.title, isSeries: !!v.isSeries }));
+
+      const spotlightSelect = document.getElementById('curation-add-spotlight');
+      const top10Select = document.getElementById('curation-add-top10');
+      const optionsHtml = '<option value="">+ Add a title...</option>' + options.map(o => `<option value="${o.id}">${o.title}${o.isSeries ? ' (Series)' : ''}</option>`).join('');
+      spotlightSelect.innerHTML = optionsHtml.replace('+ Add a title...', '+ Add a title to Spotlight...');
+      top10Select.innerHTML = optionsHtml.replace('+ Add a title...', '+ Add a title to Top 10...');
+
+      renderCurationList('curation-spotlight-list', curationDraft.spotlight, 5, options);
+      renderCurationList('curation-top10-list', curationDraft.top10, 10, options);
+    }
+
+    function renderCurationList(containerId, ids, max, options) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      if (!ids.length) {
+        container.innerHTML = `<p class="text-xs text-[var(--muted)] italic">Nothing picked yet.</p>`;
+        return;
+      }
+      ids.forEach((id, idx) => {
+        const opt = options.find(o => o.id === id);
+        const item = document.createElement('div');
+        item.className = 'curation-item';
+        item.innerHTML = `
+          <span class="text-xs font-mono text-[var(--muted)] w-5 text-center">${idx + 1}</span>
+          <span class="flex-1 text-sm text-[var(--text)] truncate">${opt ? opt.title : '(deleted title)'}</span>
+          <button type="button" class="curation-order-btn" data-dir="-1" ${idx === 0 ? 'disabled' : ''}><i data-feather="chevron-up" class="w-4 h-4"></i></button>
+          <button type="button" class="curation-order-btn" data-dir="1" ${idx === ids.length - 1 ? 'disabled' : ''}><i data-feather="chevron-down" class="w-4 h-4"></i></button>
+          <button type="button" class="curation-remove-btn text-red-300 hover:text-red-400"><i data-feather="x" class="w-4 h-4"></i></button>
+        `;
+        item.querySelector('.curation-remove-btn').addEventListener('click', () => {
+          ids.splice(idx, 1);
+          renderCurationList(containerId, ids, max, options);
+        });
+        item.querySelectorAll('.curation-order-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const dir = parseInt(btn.dataset.dir, 10);
+            const swapIdx = idx + dir;
+            if (swapIdx < 0 || swapIdx >= ids.length) return;
+            [ids[idx], ids[swapIdx]] = [ids[swapIdx], ids[idx]];
+            renderCurationList(containerId, ids, max, options);
+          });
+        });
+        container.appendChild(item);
+      });
+      feather.replace();
+    }
+
+    document.getElementById('curation-add-spotlight').addEventListener('change', (e) => {
+      const id = e.target.value;
+      e.target.value = '';
+      if (!id || curationDraft.spotlight.includes(id)) return;
+      const errorDiv = document.getElementById('curation-error');
+      if (curationDraft.spotlight.length >= 5) {
+        errorDiv.textContent = 'Spotlight is limited to 5 titles — remove one first.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      errorDiv.classList.add('hidden');
+      curationDraft.spotlight.push(id);
+      renderCurationEditor();
+    });
+
+    document.getElementById('curation-add-top10').addEventListener('change', (e) => {
+      const id = e.target.value;
+      e.target.value = '';
+      if (!id || curationDraft.top10.includes(id)) return;
+      const errorDiv = document.getElementById('curation-error');
+      if (curationDraft.top10.length >= 10) {
+        errorDiv.textContent = 'Top 10 is limited to 10 titles — remove one first.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      errorDiv.classList.add('hidden');
+      curationDraft.top10.push(id);
+      renderCurationEditor();
+    });
+
+    document.getElementById('curation-save-btn').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const token = document.getElementById('hf-token-input').value || document.getElementById('hf-token-input-manage').value;
+      const errorDiv = document.getElementById('curation-error');
+      const successDiv = document.getElementById('curation-success');
+      errorDiv.classList.add('hidden');
+      successDiv.classList.add('hidden');
+      if (!token) {
+        errorDiv.textContent = 'Enter your Hugging Face write token in the Upload tab first.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      try {
+        const blob = new Blob([JSON.stringify(curationDraft, null, 2)], { type: 'application/json' });
+        await uploadOne(token, '_meta/curation.json', blob);
+        window.__neonstreamCuration = { ...curationDraft };
+        renderHomeRows();
+        successDiv.textContent = 'Saved! The home page now reflects your picks.';
+        successDiv.classList.remove('hidden');
+        setTimeout(() => successDiv.classList.add('hidden'), 3000);
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Home & Top 10 Settings';
       }
     });
 
@@ -3824,6 +4170,29 @@
                   <input type="file" class="edit-audio-file-input input-field flex-[2] rounded-xl py-2 px-3 text-xs" accept="audio/*,.mp3,.m4a,.aac,.ogg,.wav" />
                 </div>
               </div>
+              <div class="pt-2 border-t border-[var(--border)] flex flex-col gap-3">
+                <label class="text-[10px] uppercase tracking-wider text-[var(--gold)] font-bold">Up Next &amp; Skip Intro — for this episode only</label>
+                <p class="text-[11px] text-[var(--muted)] -mt-1">Leave a field blank to use the global default set in the Player tab.</p>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[10px] uppercase tracking-wider text-[var(--muted)] mb-1 block">Up Next</label>
+                    <select class="edit-upnext-enabled-input input-field w-full rounded-xl py-2 px-3 text-sm">
+                      <option value="">Inherit default</option>
+                      <option value="on">Force On</option>
+                      <option value="off">Force Off</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="text-[10px] uppercase tracking-wider text-[var(--muted)] mb-1 block">Trigger (secs before end)</label>
+                    <input type="number" min="5" max="120" class="edit-upnext-seconds-input input-field w-full rounded-xl py-2 px-3 text-sm" placeholder="e.g. 20" value="${(currentOverride && currentOverride.player && currentOverride.player.upNextSeconds) || ''}" />
+                  </div>
+                </div>
+                <input type="text" maxlength="40" class="edit-upnext-message-input input-field w-full rounded-xl py-2 px-3 text-sm" placeholder="Up Next card label override (optional)" value="${(currentOverride && currentOverride.player && currentOverride.player.upNextMessage) || ''}" />
+                <div>
+                  <label class="text-[10px] uppercase tracking-wider text-[var(--muted)] mb-1 block">Skip Intro ends at (seconds)</label>
+                  <input type="number" min="0" max="180" class="edit-skipintro-seconds-input input-field w-full rounded-xl py-2 px-3 text-sm" placeholder="Leave blank to inherit default" value="${(currentOverride && currentOverride.player && currentOverride.player.skipIntroSeconds !== undefined && currentOverride.player.skipIntroSeconds !== null) ? currentOverride.player.skipIntroSeconds : ''}" />
+                </div>
+              </div>
               <div class="flex gap-2 justify-end">
                 <button class="edit-cancel-btn px-4 py-2 text-xs font-semibold bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] text-[var(--text)] rounded-lg transition-colors border border-[var(--border)]">Cancel</button>
                 <button class="edit-save-btn px-4 py-2 text-xs font-bold btn-primary rounded-lg transition-all">Save Changes</button>
@@ -3832,6 +4201,9 @@
           `;
           const ratingSelect = row.querySelector('.edit-rating-input');
           ratingSelect.value = (currentOverride && currentOverride.details && currentOverride.details.rating) || '';
+          const upNextEnabledSelect = row.querySelector('.edit-upnext-enabled-input');
+          const savedUpNextEnabled = currentOverride && currentOverride.player ? currentOverride.player.upNextEnabled : undefined;
+          upNextEnabledSelect.value = savedUpNextEnabled === true ? 'on' : savedUpNextEnabled === false ? 'off' : '';
           row.querySelector('.delete-file-btn').addEventListener('click', () => handleDeleteFile(f));
           row.querySelector('.edit-file-btn').addEventListener('click', () => document.getElementById(rowId).classList.toggle('hidden'));
           row.querySelector('.edit-cancel-btn').addEventListener('click', () => document.getElementById(rowId).classList.add('hidden'));
@@ -3866,6 +4238,10 @@
       const newDirector = row.querySelector('.edit-director-input').value.trim();
       const newAudioLang = row.querySelector('.edit-audio-lang-input').value.trim();
       const newAudioFile = row.querySelector('.edit-audio-file-input').files[0] || null;
+      const newUpNextEnabledRaw = row.querySelector('.edit-upnext-enabled-input').value;
+      const newUpNextSeconds = row.querySelector('.edit-upnext-seconds-input').value.trim();
+      const newUpNextMessage = row.querySelector('.edit-upnext-message-input').value.trim();
+      const newSkipIntroSeconds = row.querySelector('.edit-skipintro-seconds-input').value.trim();
 
       const saveBtn = row.querySelector('.edit-save-btn');
       saveBtn.disabled = true;
@@ -3873,10 +4249,18 @@
 
       try {
         const overridesMap = window.__neonstreamOverrides || {};
+        const playerOverride = {};
+        if (newUpNextEnabledRaw === 'on') playerOverride.upNextEnabled = true;
+        else if (newUpNextEnabledRaw === 'off') playerOverride.upNextEnabled = false;
+        if (newUpNextSeconds !== '') playerOverride.upNextSeconds = Math.max(5, Math.min(120, parseInt(newUpNextSeconds, 10) || 20));
+        if (newUpNextMessage) playerOverride.upNextMessage = newUpNextMessage;
+        if (newSkipIntroSeconds !== '') playerOverride.skipIntroSeconds = Math.max(0, Math.min(180, parseInt(newSkipIntroSeconds, 10) || 0));
+
         overridesMap[entry.overrideKey] = {
           title: newTitle,
           folder: newFolder,
-          details: { description: newDescription, year: newYear, rating: newRating, genre: newGenre, cast: newCast, director: newDirector }
+          details: { description: newDescription, year: newYear, rating: newRating, genre: newGenre, cast: newCast, director: newDirector },
+          player: Object.keys(playerOverride).length ? playerOverride : null
         };
         const overridesBlob = new Blob([JSON.stringify(overridesMap, null, 2)], { type: 'application/json' });
         await uploadOne(token, '_meta/overrides.json', overridesBlob);
