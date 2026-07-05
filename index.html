@@ -5,8 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AYUSHFLIX</title>
 
-  <!-- Tailwind CSS V4 via CDN -->
-  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <!-- Tailwind CSS V3 via CDN (v4's runtime needs a very modern browser engine
+       and silently fails to apply ANY styling on Samsung Tizen TV browsers,
+       which is what was causing the admin panel/tabs/rows/player layout to
+       break on TVs. v3's CDN runtime compiles to plain CSS and works on much
+       older WebKit/Chromium engines, including Tizen.) -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -1068,29 +1072,13 @@
             </video>
           </div>
 
-          <!-- Netflix-style "Up Next" card -->
-          <div id="up-next-card" class="hidden absolute bottom-5 right-5 z-20 w-[280px] sm:w-[340px] bg-[#181818]/95 border border-[var(--border)] rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
-            <button id="up-next-dismiss-btn" type="button" class="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white">
-              <i data-feather="x" class="w-3.5 h-3.5"></i>
-            </button>
-            <div id="up-next-thumb" class="w-full aspect-video bg-black relative overflow-hidden">
-              <svg id="up-next-ring" class="absolute top-2 left-2 w-9 h-9 -rotate-90 z-10" viewBox="0 0 36 36">
-                <circle cx="18" cy="18" r="16" fill="rgba(0,0,0,0.55)" stroke="rgba(255,255,255,0.25)" stroke-width="2.5" />
-                <circle id="up-next-ring-progress" cx="18" cy="18" r="16" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-dasharray="100.5" stroke-dashoffset="0" />
-              </svg>
-              <span id="up-next-seconds" class="absolute top-3.5 left-3.5 z-20 text-xs font-bold text-white"></span>
-            </div>
-            <div class="p-4">
-              <p id="up-next-label" class="text-[11px] font-bold uppercase tracking-widest text-[var(--gold)] mb-1">Up Next</p>
-              <p id="up-next-title" class="text-sm font-semibold text-[var(--text)] leading-tight mb-3 line-clamp-2">Next Episode</p>
-              <button id="up-next-play-btn" type="button" class="w-full py-2.5 btn-primary rounded-lg text-xs font-bold uppercase tracking-wider transition-all">Play Now</button>
-            </div>
+          <!-- Netflix-style "You're watching..." overlay, shown while paused -->
+          <div id="paused-info-overlay" class="hidden absolute top-0 left-0 right-0 z-20 px-5 sm:px-8 pt-6 sm:pt-8 pointer-events-none bg-gradient-to-b from-black/75 via-black/25 to-transparent pb-10">
+            <p id="paused-info-eyebrow" class="text-xs sm:text-sm font-semibold uppercase tracking-widest text-white/80 mb-1 drop-shadow-md">You're Watching</p>
+            <p id="paused-info-title" class="text-lg sm:text-2xl md:text-3xl font-bold text-white leading-tight drop-shadow-lg mb-1"></p>
+            <p id="paused-info-brand" class="text-sm sm:text-base font-bold tracking-wide text-white/90 drop-shadow-md" style="font-family: -apple-system, 'SF Pro Display', 'SF Pro', 'Inter', sans-serif; font-weight: 700;">AT AYUSHFLIX</p>
           </div>
 
-          <!-- Skip Intro -->
-          <button id="skip-intro-btn" type="button" class="hidden absolute bottom-6 right-5 z-20 px-5 py-2.5 bg-[rgba(20,20,20,0.85)] hover:bg-white hover:text-black border border-white/70 text-white rounded-md text-sm font-semibold transition-all backdrop-blur-sm">
-            Skip Intro
-          </button>
         </div>
 
         <div id="player-format-warning" class="hidden px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm flex flex-col gap-2">
@@ -1229,7 +1217,6 @@
       <div class="flex gap-4 sm:gap-6 px-5 sm:px-8 border-b border-[var(--border)] overflow-x-auto hide-scrollbar">
         <button id="tab-upload-btn" class="admin-tab active py-3 text-sm font-semibold transition-all">Upload</button>
         <button id="tab-manage-btn" class="admin-tab py-3 text-sm font-semibold transition-all">Manage Library</button>
-        <button id="tab-player-btn" class="admin-tab py-3 text-sm font-semibold transition-all">Player</button>
         <button id="tab-home-btn" class="admin-tab py-3 text-sm font-semibold transition-all">Home &amp; Top 10</button>
       </div>
 
@@ -1407,41 +1394,6 @@
           <div id="manage-empty" class="hidden text-center py-12 text-[var(--muted)] text-sm">Nothing uploaded yet.</div>
         </div>
 
-        <!-- Player Settings Tab -->
-        <div id="tab-player" class="p-5 sm:p-8 hidden flex flex-col gap-5">
-          <div id="player-settings-success" class="hidden p-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-xs font-mono"></div>
-
-          <div>
-            <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--text)] mb-1">"Up Next" Card</h3>
-            <p class="text-xs text-[var(--muted)] mb-4">Shows a Netflix-style card near the end of an episode with a countdown into the next one.</p>
-          </div>
-
-          <label class="flex items-center justify-between gap-3 p-4 bg-[rgba(255,255,255,0.04)] border border-[var(--border)] rounded-xl cursor-pointer select-none">
-            <span class="text-sm font-medium text-[var(--text)]">Enable Up Next card</span>
-            <input type="checkbox" id="admin-upnext-enabled" class="w-5 h-5 accent-[var(--gold)]" checked />
-          </label>
-
-          <div>
-            <label class="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-2 block">Card label / message</label>
-            <input type="text" id="admin-upnext-message" maxlength="40" placeholder="Up Next" class="input-field w-full rounded-2xl py-3 px-4 text-sm" />
-          </div>
-
-          <div>
-            <label class="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-2 block">Show it this many seconds before the episode ends</label>
-            <input type="number" id="admin-upnext-seconds" min="5" max="120" step="1" placeholder="20" class="input-field w-full rounded-2xl py-3 px-4 text-sm" />
-          </div>
-
-          <div class="pt-2 border-t border-[var(--border)]">
-            <h3 class="text-sm font-bold uppercase tracking-wider text-[var(--text)] mb-1 mt-4">Skip Intro</h3>
-            <p class="text-xs text-[var(--muted)] mb-4">Shows a "Skip Intro" button for the first N seconds of every episode. Set to 0 to disable.</p>
-            <label class="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-2 block">Intro length (seconds)</label>
-            <input type="number" id="admin-skipintro-seconds" min="0" max="180" step="1" placeholder="0" class="input-field w-full rounded-2xl py-3 px-4 text-sm" />
-          </div>
-
-          <button id="admin-upnext-save-btn" class="w-full py-3 btn-primary rounded-xl font-semibold transition-all">Save Player Settings</button>
-          <p class="text-xs text-[var(--muted)] -mt-2">These are the defaults for the whole library. To override Up Next or Skip Intro for one specific episode, open that episode in <span class="text-[var(--text)] font-semibold">Manage Library</span> and edit it there.</p>
-        </div>
-
         <!-- Home & Top 10 Tab -->
         <div id="tab-home" class="p-5 sm:p-8 hidden flex flex-col gap-6">
           <div id="curation-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono"></div>
@@ -1507,10 +1459,7 @@
     let isLoginMode = true;
     let currentVideoInfo = null;
     let currentSeriesInfo = null;
-    let upNextDismissed = false;
-    let upNextAdvanced = false;
-    let skipIntroDismissed = false;
-    let playerSettings = { upNextEnabled: true, upNextMessage: 'Up Next', upNextSeconds: 20, skipIntroSeconds: 0 };
+    let upNextAdvanced = false; // still used to guard against double-advancing at end of episode
     let playerInstance = null;
     let sleepTimerHandle = null;
     let sleepTimerEndsAt = null;
@@ -1550,9 +1499,15 @@
     // That workaround does an extra network round-trip before playback
     // even starts, which is unnecessary — and occasionally counterproductive
     // (stale/expired resolved URLs, CORS variance) — on normal browsers that
-    // never had the bug in the first place. Gate it to Tizen only so every
-    // other device just plays the direct URL like it always did.
-    const isTizenDevice = /Tizen/i.test(navigator.userAgent);
+    // never had the bug in the first place. Gate it to devices that actually
+    // have it: Tizen, AND any WebKit/Safari engine (iOS Safari, iOS Chrome/
+    // Firefox/Edge — Apple forces ALL iOS browsers to run on the same
+    // WebKit engine underneath regardless of branding — and desktop
+    // Safari). Everyone else just plays the direct URL like always.
+    const _ua = navigator.userAgent;
+    const _isIOSDevice = /iPad|iPhone|iPod/.test(_ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const _isDesktopSafari = /^((?!chrome|android).)*safari/i.test(_ua) && !_isIOSDevice;
+    const isTizenDevice = /Tizen/i.test(_ua) || _isIOSDevice || _isDesktopSafari;
 
     const resolvedUrlCache = new Map();
     async function resolvePlayableUrl(url) {
@@ -2489,33 +2444,6 @@
       renderContinueWatching();
       renderHero();
       renderHomeRows();
-      loadPlayerSettings();
-    }
-
-    // --- "Up Next" player settings (admin-configurable, shared across the family) ---
-    async function loadPlayerSettings() {
-      try {
-        const snap = await getDoc(doc(db, 'settings', 'player'));
-        if (snap.exists()) {
-          const d = snap.data();
-          playerSettings = {
-            upNextEnabled: d.upNextEnabled !== undefined ? d.upNextEnabled : true,
-            upNextMessage: d.upNextMessage || 'Up Next',
-            upNextSeconds: d.upNextSeconds || 20,
-            skipIntroSeconds: d.skipIntroSeconds || 0
-          };
-        }
-      } catch (e) {
-        console.warn('Could not load player settings, using defaults', e);
-      }
-      const enabledToggle = document.getElementById('admin-upnext-enabled');
-      const messageInput = document.getElementById('admin-upnext-message');
-      const secondsInput = document.getElementById('admin-upnext-seconds');
-      const skipIntroInput = document.getElementById('admin-skipintro-seconds');
-      if (skipIntroInput) skipIntroInput.value = playerSettings.skipIntroSeconds;
-      if (enabledToggle) enabledToggle.checked = playerSettings.upNextEnabled;
-      if (messageInput) messageInput.value = playerSettings.upNextMessage;
-      if (secondsInput) secondsInput.value = playerSettings.upNextSeconds;
     }
 
     // --- Netflix-style Hero Banner ---
@@ -3227,6 +3155,7 @@
       document.getElementById('player-subtitle').style.display = currentSeriesInfo ? 'block' : 'none';
       document.getElementById('player-subtitle').textContent = currentVideoInfo.title;
       document.getElementById('player-size').textContent = currentVideoInfo.size;
+      updatePausedOverlayInfo();
 
       const epPanel = document.getElementById('episodes-panel');
       if (currentSeriesInfo && currentSeriesInfo.episodes) {
@@ -3236,12 +3165,8 @@
         epPanel.style.display = 'none';
       }
 
-      // Reset the "Up Next" card for the episode we're now loading.
-      upNextDismissed = false;
+      // Reset the end-of-episode auto-advance guard for the episode we're now loading.
       upNextAdvanced = false;
-      document.getElementById('up-next-card').classList.add('hidden');
-      document.getElementById('skip-intro-btn').classList.add('hidden');
-      skipIntroDismissed = false;
 
       if (playerInstance) { try { playerInstance.dispose(); } catch (e) { /* ignore */ } playerInstance = null; }
 
@@ -3444,8 +3369,8 @@
       }
       playerInstance.on('timeupdate', () => saveWatchProgress(false));
       playerInstance.on('pause', () => saveWatchProgress(true));
-      playerInstance.on('timeupdate', handleUpNextTick);
-      playerInstance.on('timeupdate', handleSkipIntroTick);
+      playerInstance.on('pause', showPausedOverlay);
+      playerInstance.on(['play', 'playing', 'seeking'], hidePausedOverlay);
       playerInstance.on('ended', () => {
         if (!upNextAdvanced) advanceToNextEpisode();
       });
@@ -3600,9 +3525,11 @@
       const el = document.getElementById('video-slot');
       if (!el) return;
       if (isPlayerFullscreen()) {
-        (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+        var exitFn = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exitFn) exitFn.call(document);
       } else {
-        (el.requestFullscreen || el.webkitRequestFullscreen)?.call(el);
+        var reqFn = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (reqFn) reqFn.call(el);
       }
     }
 
@@ -3763,57 +3690,38 @@
       });
     });
 
-    // --- Netflix-style "Up Next" card ---
+    // --- Netflix-style "You're Watching ... AT AYUSHFLIX" paused overlay ---
+    function updatePausedOverlayInfo() {
+      const titleEl = document.getElementById('paused-info-title');
+      if (!titleEl || !currentVideoInfo) return;
+      titleEl.textContent = currentSeriesInfo
+        ? `${currentSeriesInfo.title} — ${currentVideoInfo.title}`
+        : currentVideoInfo.title;
+    }
+
+    function showPausedOverlay() {
+      const overlay = document.getElementById('paused-info-overlay');
+      if (!overlay) return;
+      updatePausedOverlayInfo();
+      if (overlay.classList.contains('hidden')) {
+        overlay.classList.remove('hidden');
+        gsap.fromTo(overlay, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' });
+      }
+    }
+
+    function hidePausedOverlay() {
+      const overlay = document.getElementById('paused-info-overlay');
+      if (!overlay || overlay.classList.contains('hidden')) return;
+      gsap.to(overlay, { opacity: 0, y: -8, duration: 0.2, ease: 'power2.in', onComplete: () => overlay.classList.add('hidden') });
+    }
+
+    // --- Auto-advance to next episode when one finishes ---
     function getNextEpisode() {
       if (!currentSeriesInfo || !currentSeriesInfo.episodes) return null;
       const eps = currentSeriesInfo.episodes;
       const idx = eps.findIndex(e => e.id === currentVideoInfo.id);
       if (idx === -1 || idx >= eps.length - 1) return null;
       return eps[idx + 1];
-    }
-
-    // Merges the global Player-tab defaults with any per-episode override
-    // saved on the episode itself (via the Manage Library edit form).
-    function effectivePlayerSettings() {
-      const ov = (currentVideoInfo && currentVideoInfo.player) || {};
-      return {
-        upNextEnabled: ov.upNextEnabled !== undefined && ov.upNextEnabled !== null ? ov.upNextEnabled : playerSettings.upNextEnabled,
-        upNextMessage: ov.upNextMessage || playerSettings.upNextMessage,
-        upNextSeconds: ov.upNextSeconds || playerSettings.upNextSeconds,
-        skipIntroSeconds: (ov.skipIntroSeconds !== undefined && ov.skipIntroSeconds !== null) ? ov.skipIntroSeconds : playerSettings.skipIntroSeconds
-      };
-    }
-
-    function handleUpNextTick() {
-      const settings = effectivePlayerSettings();
-      if (!settings.upNextEnabled || upNextDismissed || upNextAdvanced || !playerInstance) return;
-      const next = getNextEpisode();
-      if (!next) return;
-
-      const duration = playerInstance.duration();
-      const current = playerInstance.currentTime();
-      if (!duration || isNaN(duration)) return;
-      const remaining = duration - current;
-
-      const card = document.getElementById('up-next-card');
-      if (remaining <= settings.upNextSeconds) {
-        if (card.classList.contains('hidden')) {
-          document.getElementById('up-next-label').textContent = settings.upNextMessage || 'Up Next';
-          document.getElementById('up-next-title').textContent = next.title;
-          const thumbBox = document.getElementById('up-next-thumb');
-          thumbBox.style.backgroundImage = next.thumbnail ? `url('${next.thumbnail}')` : 'none';
-          thumbBox.style.backgroundSize = 'cover';
-          thumbBox.style.backgroundPosition = 'center';
-          thumbBox.style.backgroundColor = next.thumbnail ? '' : '#141414';
-          card.classList.remove('hidden');
-          gsap.fromTo(card, { opacity: 0, y: 16, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' });
-        }
-        const pctLeft = Math.max(0, Math.min(1, remaining / settings.upNextSeconds));
-        const circumference = 100.5;
-        document.getElementById('up-next-ring-progress').style.strokeDashoffset = String(circumference * (1 - pctLeft));
-        document.getElementById('up-next-seconds').textContent = Math.max(0, Math.ceil(remaining));
-        if (remaining <= 0.3) advanceToNextEpisode();
-      }
     }
 
     function advanceToNextEpisode() {
@@ -3823,35 +3731,6 @@
       upNextAdvanced = true;
       playVideo(next, currentSeriesInfo);
     }
-
-    function handleSkipIntroTick() {
-      const settings = effectivePlayerSettings();
-      const btn = document.getElementById('skip-intro-btn');
-      if (!settings.skipIntroSeconds || skipIntroDismissed || !playerInstance) { btn.classList.add('hidden'); return; }
-      const current = playerInstance.currentTime();
-      if (current <= settings.skipIntroSeconds) {
-        btn.classList.remove('hidden');
-      } else {
-        btn.classList.add('hidden');
-      }
-    }
-
-    document.getElementById('skip-intro-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (playerInstance) playerInstance.currentTime(effectivePlayerSettings().skipIntroSeconds);
-      skipIntroDismissed = true;
-      document.getElementById('skip-intro-btn').classList.add('hidden');
-    });
-
-    document.getElementById('up-next-dismiss-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      upNextDismissed = true;
-      document.getElementById('up-next-card').classList.add('hidden');
-    });
-    document.getElementById('up-next-play-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      advanceToNextEpisode();
-    });
 
     function renderEpisodesList() {
       const list = document.getElementById('episodes-list');
@@ -3905,14 +3784,12 @@
     // Tabs
     const tabUploadBtn = document.getElementById('tab-upload-btn');
     const tabManageBtn = document.getElementById('tab-manage-btn');
-    const tabPlayerBtn = document.getElementById('tab-player-btn');
     const tabHomeBtn = document.getElementById('tab-home-btn');
     const tabUpload = document.getElementById('tab-upload');
     const tabManage = document.getElementById('tab-manage');
-    const tabPlayer = document.getElementById('tab-player');
     const tabHome = document.getElementById('tab-home');
-    const allAdminTabBtns = [tabUploadBtn, tabManageBtn, tabPlayerBtn, tabHomeBtn];
-    const allAdminTabPanels = [tabUpload, tabManage, tabPlayer, tabHome];
+    const allAdminTabBtns = [tabUploadBtn, tabManageBtn, tabHomeBtn];
+    const allAdminTabPanels = [tabUpload, tabManage, tabHome];
     function activateAdminTab(activeBtn, activePanel) {
       allAdminTabBtns.forEach(b => b.classList.toggle('active', b === activeBtn));
       allAdminTabPanels.forEach(p => p.classList.toggle('hidden', p !== activePanel));
@@ -3922,39 +3799,9 @@
       activateAdminTab(tabManageBtn, tabManage);
       renderManageList();
     });
-    tabPlayerBtn.addEventListener('click', () => {
-      activateAdminTab(tabPlayerBtn, tabPlayer);
-      loadPlayerSettings();
-    });
     tabHomeBtn.addEventListener('click', () => {
       activateAdminTab(tabHomeBtn, tabHome);
       renderCurationEditor();
-    });
-
-    document.getElementById('admin-upnext-save-btn').addEventListener('click', async (e) => {
-      const btn = e.currentTarget;
-      const successEl = document.getElementById('player-settings-success');
-      const newSettings = {
-        upNextEnabled: document.getElementById('admin-upnext-enabled').checked,
-        upNextMessage: document.getElementById('admin-upnext-message').value.trim() || 'Up Next',
-        upNextSeconds: Math.max(5, Math.min(120, parseInt(document.getElementById('admin-upnext-seconds').value, 10) || 20)),
-        skipIntroSeconds: Math.max(0, Math.min(180, parseInt(document.getElementById('admin-skipintro-seconds').value, 10) || 0))
-      };
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-      try {
-        await setDoc(doc(db, 'settings', 'player'), newSettings, { merge: true });
-        playerSettings = newSettings;
-        successEl.textContent = 'Saved!';
-        successEl.classList.remove('hidden');
-        setTimeout(() => successEl.classList.add('hidden'), 2500);
-      } catch (err) {
-        console.error('Could not save player settings', err);
-        alert('Could not save settings: ' + (err && err.message ? err.message : 'unknown error'));
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Save Player Settings';
-      }
     });
 
     // --- Home & Top 10 curation editor ---
@@ -4170,29 +4017,6 @@
                   <input type="file" class="edit-audio-file-input input-field flex-[2] rounded-xl py-2 px-3 text-xs" accept="audio/*,.mp3,.m4a,.aac,.ogg,.wav" />
                 </div>
               </div>
-              <div class="pt-2 border-t border-[var(--border)] flex flex-col gap-3">
-                <label class="text-[10px] uppercase tracking-wider text-[var(--gold)] font-bold">Up Next &amp; Skip Intro — for this episode only</label>
-                <p class="text-[11px] text-[var(--muted)] -mt-1">Leave a field blank to use the global default set in the Player tab.</p>
-                <div class="grid grid-cols-2 gap-2">
-                  <div>
-                    <label class="text-[10px] uppercase tracking-wider text-[var(--muted)] mb-1 block">Up Next</label>
-                    <select class="edit-upnext-enabled-input input-field w-full rounded-xl py-2 px-3 text-sm">
-                      <option value="">Inherit default</option>
-                      <option value="on">Force On</option>
-                      <option value="off">Force Off</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="text-[10px] uppercase tracking-wider text-[var(--muted)] mb-1 block">Trigger (secs before end)</label>
-                    <input type="number" min="5" max="120" class="edit-upnext-seconds-input input-field w-full rounded-xl py-2 px-3 text-sm" placeholder="e.g. 20" value="${(currentOverride && currentOverride.player && currentOverride.player.upNextSeconds) || ''}" />
-                  </div>
-                </div>
-                <input type="text" maxlength="40" class="edit-upnext-message-input input-field w-full rounded-xl py-2 px-3 text-sm" placeholder="Up Next card label override (optional)" value="${(currentOverride && currentOverride.player && currentOverride.player.upNextMessage) || ''}" />
-                <div>
-                  <label class="text-[10px] uppercase tracking-wider text-[var(--muted)] mb-1 block">Skip Intro ends at (seconds)</label>
-                  <input type="number" min="0" max="180" class="edit-skipintro-seconds-input input-field w-full rounded-xl py-2 px-3 text-sm" placeholder="Leave blank to inherit default" value="${(currentOverride && currentOverride.player && currentOverride.player.skipIntroSeconds !== undefined && currentOverride.player.skipIntroSeconds !== null) ? currentOverride.player.skipIntroSeconds : ''}" />
-                </div>
-              </div>
               <div class="flex gap-2 justify-end">
                 <button class="edit-cancel-btn px-4 py-2 text-xs font-semibold bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] text-[var(--text)] rounded-lg transition-colors border border-[var(--border)]">Cancel</button>
                 <button class="edit-save-btn px-4 py-2 text-xs font-bold btn-primary rounded-lg transition-all">Save Changes</button>
@@ -4201,9 +4025,6 @@
           `;
           const ratingSelect = row.querySelector('.edit-rating-input');
           ratingSelect.value = (currentOverride && currentOverride.details && currentOverride.details.rating) || '';
-          const upNextEnabledSelect = row.querySelector('.edit-upnext-enabled-input');
-          const savedUpNextEnabled = currentOverride && currentOverride.player ? currentOverride.player.upNextEnabled : undefined;
-          upNextEnabledSelect.value = savedUpNextEnabled === true ? 'on' : savedUpNextEnabled === false ? 'off' : '';
           row.querySelector('.delete-file-btn').addEventListener('click', () => handleDeleteFile(f));
           row.querySelector('.edit-file-btn').addEventListener('click', () => document.getElementById(rowId).classList.toggle('hidden'));
           row.querySelector('.edit-cancel-btn').addEventListener('click', () => document.getElementById(rowId).classList.add('hidden'));
@@ -4238,10 +4059,6 @@
       const newDirector = row.querySelector('.edit-director-input').value.trim();
       const newAudioLang = row.querySelector('.edit-audio-lang-input').value.trim();
       const newAudioFile = row.querySelector('.edit-audio-file-input').files[0] || null;
-      const newUpNextEnabledRaw = row.querySelector('.edit-upnext-enabled-input').value;
-      const newUpNextSeconds = row.querySelector('.edit-upnext-seconds-input').value.trim();
-      const newUpNextMessage = row.querySelector('.edit-upnext-message-input').value.trim();
-      const newSkipIntroSeconds = row.querySelector('.edit-skipintro-seconds-input').value.trim();
 
       const saveBtn = row.querySelector('.edit-save-btn');
       saveBtn.disabled = true;
@@ -4249,18 +4066,11 @@
 
       try {
         const overridesMap = window.__neonstreamOverrides || {};
-        const playerOverride = {};
-        if (newUpNextEnabledRaw === 'on') playerOverride.upNextEnabled = true;
-        else if (newUpNextEnabledRaw === 'off') playerOverride.upNextEnabled = false;
-        if (newUpNextSeconds !== '') playerOverride.upNextSeconds = Math.max(5, Math.min(120, parseInt(newUpNextSeconds, 10) || 20));
-        if (newUpNextMessage) playerOverride.upNextMessage = newUpNextMessage;
-        if (newSkipIntroSeconds !== '') playerOverride.skipIntroSeconds = Math.max(0, Math.min(180, parseInt(newSkipIntroSeconds, 10) || 0));
 
         overridesMap[entry.overrideKey] = {
           title: newTitle,
           folder: newFolder,
-          details: { description: newDescription, year: newYear, rating: newRating, genre: newGenre, cast: newCast, director: newDirector },
-          player: Object.keys(playerOverride).length ? playerOverride : null
+          details: { description: newDescription, year: newYear, rating: newRating, genre: newGenre, cast: newCast, director: newDirector }
         };
         const overridesBlob = new Blob([JSON.stringify(overridesMap, null, 2)], { type: 'application/json' });
         await uploadOne(token, '_meta/overrides.json', overridesBlob);
