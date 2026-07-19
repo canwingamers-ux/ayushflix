@@ -3430,7 +3430,24 @@
           playsinline: true,
           preload: 'metadata',
           playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5],
-          userActions: { click: false, doubleClick: false }
+          userActions: { click: false, doubleClick: false },
+          html5: {
+            vhs: {
+              // Safari (desktop + iOS) has a solid native HLS implementation —
+              // let it use that. Every other browser (Chrome/Firefox/Edge/
+              // Android/most Smart TVs) has NO native .m3u8 support at all, so
+              // they need video.js's own HLS engine (VHS) instead — without
+              // this override, those browsers just fail to play HLS entirely.
+              overrideNative: !(videojs.browser && videojs.browser.IS_SAFARI),
+              enableLowInitialPlaylist: true,
+              // Smart-TV/mobile browsers on flaky connections handle a
+              // steadily-growing buffer better than VHS's default aggressive
+              // bandwidth-based quality switching, which can cause stalls.
+              bandwidth: 4194304
+            },
+            nativeAudioTracks: false,
+            nativeVideoTracks: false
+          }
         });
       } catch (e) {
         initFailed = true;
