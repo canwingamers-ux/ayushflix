@@ -1,0 +1,6 @@
+{
+  "name": "AYUSHFLIX",
+  "description": "An all-in-one private movie streaming client with custom profiles and curated homepage spotlights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
